@@ -1,0 +1,114 @@
+#!/bin/bash
+# Debjit Pramanik
+
+# get the directory of the bash script
+script_dir="$(dirname "$(readlink -f "$0")")"
+
+input_file=""
+output_file=""
+feature_type=""
+
+# Spinner settings
+spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+charwidth=3
+
+# Function to hide the cursor
+hide_cursor() {
+    tput civis
+}
+
+# Function to show the cursor
+show_cursor() {
+    tput cnorm
+}
+
+# function to display script usage
+usage() {
+    echo "Usage: $0 -f <feature_type> -i <input_file> -o <output_file>"
+    echo "Options:"
+    echo "  -f <feature_type>  Specify the feature profile like bigg, cog, ec, etc"
+    echo "  -i <input_file>    Specify the input text file"
+    echo "  -o <output_file>   Specify the output csv file name"
+    echo "  -h                 Display this help message"
+    exit 1
+}
+
+# function to run python script based on feature type
+
+run_python_script() {
+    local script_name="$1"
+    local input="$2"
+    local output="$3"
+    local python_script="$script_dir/scripts/$script_name.py"
+    python "$python_script" "$input" "$output" &
+    hide_cursor
+    local python_pid=$!
+    spinner "$python_pid"
+    wait $python_pid
+    show_cursor
+}
+
+# spinner function
+
+spinner() {
+    local pid=$1
+    local i=0
+
+    while ps -p $pid > /dev/null; do
+        printf "\b${spin:$i:1}"
+        i=$(( (i+1) % ${#spin} ))
+        sleep 0.1
+    done
+    
+    printf "\b"  # Clear the spinner character
+}
+
+# parse command-line option
+
+while getopts ":f:i:o:h" opt; do
+    case $opt in
+        f)
+            feature_type="$OPTARG"
+            ;;
+        i)
+            input_file="$OPTARG"
+            ;;
+        o)
+            output_file="$OPTARG"
+            ;;
+        h)
+            usage
+            ;;
+        \?)
+            echo -e "\e[1;31mInvalid option: -$OPTARG\e[0m"
+            usage
+            ;;
+        :)
+            echo -e "\e[1;31mOption -$OPTARG requires an argument.\e[0m"
+            usage
+            ;;
+    esac
+done
+
+# check if required option are provided
+
+if [ -z "$feature_type" ] || [ -z "$input_file" ] || [ -z "$output_file" ]; then
+    echo -e "\e[1;31mMissing required options.\e[0m"
+    usage
+fi
+
+case "$feature_type" in
+    bigg)
+        run_python_script "bigg" "$input_file" "$output_file"
+        ;;
+    cog)
+        run_python_script "cog" "$input_file" "$output_file"
+        ;;
+    ec)
+        run_python_script "ec" "$input_file" "$output_file"
+        ;;
+    *)
+        echo "Unsupported feature type : $feature_type"
+        usage
+        ;;
+esac
