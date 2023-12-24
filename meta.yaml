@@ -1,22 +1,28 @@
+{% set version = "1.0.0" %}
+
 package:
   name: feature_annotation
-  version: 1.0.0
-
-source:
-  path: ..
+  version: "{{ version }}"
 
 build:
-  script: ./build.sh
+  script: bash build.sh
+
+source:
+  url: https://github.com/debjit20504/feature_annotation/archive/refs/tags/v{{ version }}.tar.gz 
+  sha256 : a004e24fc0504cea5202cc17bea6f90b76390fb22e605fca3c05f68352689bcd
 
 requirements:
-  build:
+  host:
     - bash
   run:
-    - python
+    - python >=3
     - conda
     - requests
     - pandas
     - bs4
+test:
+  commands:
+    - feature_annotation -h
 
 about:
   home: https://github.com/debjit20504/feature_annotation
