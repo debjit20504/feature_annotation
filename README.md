@@ -1,0 +1,1 @@
+Feature annotation is a command-line tool that provides detailed information about biological entities identified by unique identifiers (IDs). Given a text file containing a list of IDs, which can be from COG, BIGG, or EC databases, the tool fetches and presents relevant information about each ID.
